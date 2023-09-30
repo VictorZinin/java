@@ -1,90 +1,144 @@
-import java.time.LocalTime;
-import java.util.Arrays;
+// Задание
+
+// Реализуйте структуру телефонной книги с помощью HashMap.
+// Программа также должна учитывать, что во входной структуре будут повторяющиеся имена
+// с разными телефонами, их необходимо считать, как одного человека с разными телефонами. 
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.Stack;
 
-public class telbook {
-    public static void main(String[] args) {
-        sem1_homework1();
-    }
+public class sem22
+{
 
-    static void task0() {
-        System.out.println("Как тебя зовут?");
-        Scanner scanner = new Scanner(System.in);
-        String name = scanner.nextLine();
-        LocalTime localTime = LocalTime.now();
-        int hour = localTime.getHour();
-        if(hour >= 6 && hour < 12) {
-            System.out.println("Доброе утро, " + name);
-        }
-        else if (hour < 18){
-            System.out.println("Добрый день, " + name);
-        }
-        else if (hour < 23){
-            System.out.println("Добрый вечер, " + name);
-        }
-        else {
-            System.out.println("Доброй ночи, " + name);
-        }
-        scanner.close();
-    }
+    // -----  Метод sortedPrint() сортирует и распечатывает данные по абонентам -----
+    static void sortedPrint(Map<String, ArrayList> map) {
 
-    static void task1(){
-        int[] arr = {1, 0, 1, 0, 1, 1};
-        int count = 0;
-        int ones = 0;
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == 1){
-                count++;
-            }
-            else{
-                if(count > ones){
-                    ones = count;
+        // Получаем набор всех ключей abon
+        Set<String> keySet = map.keySet();
+
+        // Находим минимальное и максимальное значение
+        int maxCount = 0;
+        int minCount = 1_000_000;
+
+        for (var item : map.entrySet()) {
+            if (maxCount < item.getValue().size())
+                maxCount = item.getValue().size();
+            if (minCount > item.getValue().size())
+                minCount = item.getValue().size();
+
+        }
+        // Формируем стек, начиная с минимального количества номеров 
+        Stack<String> st = new Stack<>();
+        int num = minCount;
+        while (num <= maxCount) {
+            // System.out.println(map);
+            for (var item : map.entrySet()) {
+                if (item.getValue().size() == num) {
+                    st.push(item.getKey());
                 }
-                count = 0;
+            }
+            num += 1;
+        }
+        // Распечатываем пары в порядке ключей, находящихся в стеке
+        String name;
+        for (int i = 0; i < keySet.size(); i++) {
+            name = st.pop();
+            for (var item : map.entrySet()) {
+                if (name == item.getKey()) {
+                    System.out.printf("%8s: ", item.getKey());
+                    System.out.println(item.getValue());
+                }
             }
         }
-        if (count > ones){
-            System.out.println(count);
-        }
-        else {
-            System.out.println(ones);
-        }
+        System.out.println();
     }
 
-    static void task2() {
-        int[] arr = {3, 2, 1, 4, 3, 3, 5, 7, 0, 1};
-        int val = 3;
-        int[] tempArr = new int[arr.length];
-        Arrays.fill(tempArr, val);
-        int current = 0;
-        for (int i = 0; i < arr.length; i++) {
-            if(arr[i] != val){
-                tempArr[current++] = arr[i];
+
+    // ------------- основная часть ----------------------------------
+    public static void main(String[] args) {
+        // Инициализация начального списка
+        Map<String, ArrayList> abon = new HashMap<>() {
+            {
+                put("Петров", new ArrayList<Integer>() {
+                    {
+                        add(795034554);
+                        add(234576);
+                        add(791361423);
+                    }
+                });
+                put("Иванов", new ArrayList<Integer>() {
+                    {
+                        add(555464);
+                    }
+                });
+                put("Сидоров", new ArrayList<Integer>() {
+                    {
+                        add(234774);
+                        add(238765);
+
+                    }
+                });
+                put("Андреев", new ArrayList<Integer>() {
+                    {
+                        add(654722);
+                        add(141844);
+                        add(224657);
+                        add(951654);
+                    }
+                });
+            }
+        };
+        System.out.println();
+        // Печатаем исходный набор данных
+        System.out.println("Исходные данные: ");
+        sortedPrint(abon);
+
+        // Создаем циклическое меню
+        Scanner scan = new Scanner(System.in, "cp866");
+        Boolean getOut = false;
+        String st;
+        while (!getOut) {
+            System.out.println("Введите номер действия (1 - добавить абонента, 9 - выйти из программы):");
+            st = scan.nextLine();
+            String name = "";
+            String phString;
+            switch (st) {
+                case "1": {
+                    System.out.println("Введите фамилию абонента:");
+                    name = scan.nextLine();
+                    if (abon.containsKey(name)) {
+                        System.out.println("Такая фамилия уже есть.");
+                        System.out.println();
+                        break;
+                    } else {
+                        System.out.println("Введите номера телефонов через запятую: ");
+                        phString = scan.nextLine();
+                        String[] arr = phString.split(",");
+                        ArrayList<Integer> arrInt = new ArrayList<>();
+                        for (String item: arr) {
+                            arrInt.add(Integer.parseInt(item.trim())) ;
+                        }
+                        abon.put(name, arrInt);
+                        System.out.println();
+                        sortedPrint(abon);
+                        break;
+                    }
+                }
+                case "9": {
+                    getOut = true;
+                    System.out.println();
+                    System.out.println("До свидания!");
+                    System.out.println();
+                    break;
+                }
+
 
             }
         }
-        System.out.println(Arrays.toString(tempArr));
     }
 
-    static  void sem1_task1(){
-        String text_nash = "Добро пожаловать на курс по Java";
-        String [] text_massiv = text_nash.split(" ");
-        String temp_word = "";
-        for (int i = 0; i < text_massiv.length; i++) {
-            temp_word = temp_word + text_massiv[text_massiv.length - 1 - i] + " ";
-        }
-        System.out.println(temp_word);
-    }
-
-    static void sem1_homework1(){
-        int n = 6;
-        int count = 1;
-        int temp = 0;
-
-        for (int i = 0; i < n; i++){
-            temp += count;
-            count++;
-        }
-        System.out.println(temp);
-    }
 }
